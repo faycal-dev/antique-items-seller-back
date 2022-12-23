@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'mptt',
     'users',
     'store',
+    'bidding',
+    'webadmin',
     
 ]
 
@@ -121,6 +123,12 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media/'
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': config("CLOUD_NAME"),
+    'API_KEY': config("CLOUDINARY_API_KEY"),
+    'API_SECRET': config("CLOUDINARY_API_SECRET")
+}
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -140,11 +148,12 @@ REST_FRAMEWORK = {
 # allow external origins and add token to the exposed header
 CORS_ALLOWED_ORIGINS = [
     "http://localhost",
+    "http://localhost:3000",
     "http://127.0.0.1",
 ]
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=180),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=3),
     # generating a new refresh token in every time we ask for a refresh
     'ROTATE_REFRESH_TOKENS': True,
@@ -169,7 +178,7 @@ SIMPLE_JWT = {
     'JTI_CLAIM': 'jti',
 
     'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
-    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=30),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 
 }

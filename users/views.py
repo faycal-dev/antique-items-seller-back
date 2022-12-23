@@ -36,7 +36,7 @@ class RegisterView(APIView):
             re_password = data['re_password']
 
             if password == re_password:
-                if len(password) >= 6:
+                if len(password) >= 5:
                     if not User.objects.filter(email=email).exists():
                         user = User.objects.create_user(
                             email=email,
@@ -75,7 +75,7 @@ class RegisterView(APIView):
                         )
                 else:
                     return Response(
-                        {'error': 'Password must be at least 8 characters in length'},
+                        {'error': 'Password must be at least 5 characters in length'},
                         status=status.HTTP_400_BAD_REQUEST
                     )
             else:
@@ -216,4 +216,5 @@ class BlacklistTokenView(APIView):
                 status=status.HTTP_200_OK
             )
         except Exception as e:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
