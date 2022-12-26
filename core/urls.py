@@ -10,7 +10,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include("store.urls", namespace='store')),
     path("account/", include("users.urls", namespace="account")),
-    
+    path("bid/", include("bidding.urls", namespace="bidding")),
+    path("webadmin/", include("webadmin.urls", namespace="webadmin")),
+
     path('token/', TokenObtainPairView.as_view()),
     path('token/refresh/', TokenRefreshView.as_view()),
     path('token/verify/', TokenVerifyView.as_view()),

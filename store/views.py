@@ -9,12 +9,23 @@ from .models import Category, Product
 from .serializers import CategorySerializer, ProductSerializer, ProductsSerializer
 
 
+
 class ProductListView(generics.ListAPIView):
+
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
-    queryset = Product.objects.all()
+    # queryset = Product.objects.all()
     serializer_class = ProductsSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['title', 'description', 'rating']
+
+    def get_queryset(self):
+        query_param = self.request.query_params.get("sort", None)
+        if (query_param == "h"):
+            return models.Product.objects.all().order_by("-regular_price")
+        elif (query_param == "l"):
+            return models.Product.objects.all().order_by("regular_price")
+        else:
+            return models.Product.objects.all()
 
 
 class Product(generics.RetrieveAPIView):
@@ -38,6 +49,5 @@ class CategoryItemView(generics.ListAPIView):
 
 class CategoryListView(generics.ListAPIView):
     permission_classes = (permissions.IsAuthenticated, )
-    queryset = Category.objects.filter(
-        level=0).get_descendants(include_self=True)
+    queryset = Category.objects.filter().get_descendants(include_self=True)
     serializer_class = CategorySerializer

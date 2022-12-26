@@ -101,7 +101,8 @@ class Product(models.Model):
     The Product table contining all product items.
     """
 
-    product_type = models.ForeignKey(ProductType, on_delete=models.RESTRICT)
+    product_type = models.ForeignKey(
+        ProductType, on_delete=models.RESTRICT, null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.RESTRICT)
     title = models.CharField(
         verbose_name=_("title"),
@@ -110,7 +111,7 @@ class Product(models.Model):
     )
     description = models.TextField(verbose_name=_(
         "description"), help_text=_("Not Required"), blank=True)
-    slug = models.SlugField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True)
     regular_price = models.DecimalField(
         verbose_name=_("Regular price"),
         help_text=_("Maximum 99999999.99"),
@@ -164,7 +165,6 @@ class Product(models.Model):
 
     def __str__(self):
         return self.title
-        
 
 
 class ProductSpecificationValue(models.Model):

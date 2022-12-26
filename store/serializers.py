@@ -1,4 +1,6 @@
 from rest_framework import serializers
+import base64
+from django.core.files.base import ContentFile
 
 from .models import Category, Product, ProductImage, ProductSpecificationValue, ProductType
 
@@ -9,10 +11,62 @@ class ImageSerializer(serializers.ModelSerializer):
         fields = ["image", "alt_text"]
 
 
+class Base64ImageField(serializers.ImageField):
+    """
+    A Django REST framework field for handling image-uploads through raw post data.
+    It uses base64 for encoding and decoding the contents of the file.
+
+    Heavily based on
+    https://github.com/tomchristie/django-rest-framework/pull/1268
+
+    Updated for Django REST framework 3.
+    """
+
+    def to_internal_value(self, data):
+        from django.core.files.base import ContentFile
+        import base64
+        import six
+        import uuid
+
+        # Check if this is a base64 string
+        if isinstance(data, six.string_types):
+            # Check if the base64 string is in the "data:" format
+            if 'data:' in data and ';base64,' in data:
+                # Break out the header from the base64 content
+
+                header, data = data.split(';base64,')
+
+            # Try to decode the file. Return validation error if it fails.
+            try:
+                decoded_file = base64.b64decode(data)
+            except TypeError:
+                self.fail('invalid_image')
+
+            # Generate file name:
+            # 12 characters are more than enough.
+            file_name = str(uuid.uuid4())[:12]
+            # Get the file name extension:
+            file_extension = self.get_file_extension(file_name, decoded_file)
+
+            complete_file_name = "%s.%s" % (file_name, file_extension, )
+
+            data = ContentFile(decoded_file, name=complete_file_name)
+
+        return super(Base64ImageField, self).to_internal_value(data)
+
+    def get_file_extension(self, file_name, decoded_file):
+        import imghdr
+
+        extension = imghdr.what(file_name, decoded_file)
+        extension = "jpg" if extension == "jpeg" else extension
+
+        return extension
+
+
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ["name", "slug"]
+        fields = ["id", "name", "slug"]
 
 
 class ProductSpecificationSerializer(serializers.ModelSerializer):
@@ -40,11 +94,34 @@ class ProductSerializer(serializers.ModelSerializer):
                   "slug", "regular_price", "rating_number", "rating", "product_image", "product_type", "productSpecificationValue"]
 
 
+class AdminProductSerializer(serializers.ModelSerializer):
+    product_image = ImageSerializer(many=True, read_only=True)
+    uploaded_images = serializers.ListField(
+        child=Base64ImageField(
+            max_length=None, use_url=True,
+        ),
+        write_only=True)
+
+    class Meta:
+        model = Product
+        fields = ["id", "category", "title", "description", "auction_end_date",
+                  "slug", "product_image", "uploaded_images"]
+
+    def create(self, validated_data):
+        print(validated_data)
+        uploaded_data = validated_data.pop('uploaded_images')
+        new_product = Product.objects.create(**validated_data)
+        for uploaded_item in uploaded_data:
+            new_product_image = ProductImage.objects.create(
+                product=new_product, image=uploaded_item, alt_text="product image")
+        return new_product
+
+
 class ProductsSerializer(serializers.ModelSerializer):
     product_image = ImageSerializer(many=True, read_only=True)
     # category = CategorySerializer() if you want to add the category details in product data
 
     class Meta:
         model = Product
-        fields = ["id", "title", "description",
-                  "slug", "regular_price", "rating", "product_image", "is_active", "auction_end_date"]
+        fields = ["id", "title", "slug",
+                  "regular_price", "rating", "product_image", "description", "auction_end_date", "category"]
