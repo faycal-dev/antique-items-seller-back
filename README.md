@@ -78,3 +78,8 @@ username : user2 , password : user2
 It will be better if you create your own user to recieve email notifications <br/>
 username : admin1 , password : admin1 <br/>
 username : admin2 , password : admin2
+
+**Futur possible updates**
++ Real time bidding updates (django channels + web sockets)
++ Online checkout (stripe)
++ wish list and cart pages 
