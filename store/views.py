@@ -2,12 +2,12 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, filters, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from datetime import datetime
 
 
 from . import models
 from .models import Category, Product
 from .serializers import CategorySerializer, ProductSerializer, ProductsSerializer
-
 
 
 class ProductListView(generics.ListAPIView):
@@ -19,13 +19,14 @@ class ProductListView(generics.ListAPIView):
     search_fields = ['title', 'description', 'rating']
 
     def get_queryset(self):
+        today = datetime.today()
         query_param = self.request.query_params.get("sort", None)
         if (query_param == "h"):
-            return models.Product.objects.all().order_by("-regular_price")
+            return models.Product.objects.filter(auction_end_date__gte=today).order_by("-regular_price")
         elif (query_param == "l"):
-            return models.Product.objects.all().order_by("regular_price")
+            return models.Product.objects.filter(auction_end_date__gte=today).order_by("regular_price")
         else:
-            return models.Product.objects.all()
+            return models.Product.objects.filter(auction_end_date__gte=today)
 
 
 class Product(generics.RetrieveAPIView):
