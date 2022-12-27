@@ -41,7 +41,7 @@ class AddBidView(APIView, UserbidWritePermission):
                         winner_bid.bidding_amount = bid.bidding_amount + 1
                         product.regular_price = bid.bidding_amount + 1
                         users_with_auto_bid_active[0].save()
-                        
+
                         # if the treshold is passed
                         notification_treshold = users_with_auto_bid_active[0].bidding_max_amount * \
                             users_with_auto_bid_active[0].bidding_notification_threshold / 100
@@ -50,7 +50,7 @@ class AddBidView(APIView, UserbidWritePermission):
                         if (used_credit >= notification_treshold):
                             Util.send_email(
                                 users_with_auto_bid_active[0].user.email, used_credit)
-                            
+
                         winner_bid.save()
                         product.save()
                     # if he hasn't the needed amount he will broke
@@ -60,7 +60,7 @@ class AddBidView(APIView, UserbidWritePermission):
                         users_with_auto_bid_active[0].amout_left = 0
                         winner_bid.save()
                         users_with_auto_bid_active[0].save()
-                        
+
                         # if the treshold is passed
                         notification_treshold = users_with_auto_bid_active[0].bidding_max_amount * \
                             users_with_auto_bid_active[0].bidding_notification_threshold / 100
@@ -82,12 +82,14 @@ class AddBidView(APIView, UserbidWritePermission):
                         user=users_with_auto_bid_active[i].user, product=product)
 
                     if (winner_bid.bidding_amount + winner_auto_bid.amout_left < user_bid.bidding_amount + users_with_auto_bid_active[i].amout_left):
-                        winner_bid_amount = winner_bid.bidding_amount + winner_auto_bid.amout_left + 1
+                        # get the second biggest auto bid to outbid it
+                        winner_bid_amount = max(
+                            winner_bid.bidding_amount + winner_auto_bid.amout_left + 1, winner_bid_amount)
                         winner_bid.bidding_amount += winner_auto_bid.amout_left
                         winner_auto_bid.amout_left = 0
                         winner_bid.save()
                         winner_auto_bid.save()
-                        
+
                         # if the treshold is passed
                         notification_treshold = winner_auto_bid.bidding_max_amount * \
                             winner_auto_bid.bidding_notification_threshold / 100
@@ -96,17 +98,18 @@ class AddBidView(APIView, UserbidWritePermission):
                         if (used_credit >= notification_treshold):
                             Util.send_email(
                                 winner_auto_bid.user.email, used_credit)
-                            
+
                         winner_bid = user_bid
                         winner_auto_bid = users_with_auto_bid_active[i]
                     else:
-                        winner_bid_amount = user_bid.bidding_amount + \
-                            users_with_auto_bid_active[i].amout_left + 1
+                        # get the second biggest auto bid to outbid it
+                        winner_bid_amount = max(user_bid.bidding_amount +
+                                                users_with_auto_bid_active[i].amout_left + 1, winner_bid_amount)
                         user_bid.bidding_amount += users_with_auto_bid_active[i].amout_left
                         users_with_auto_bid_active[i].amout_left = 0
                         user_bid.save()
                         users_with_auto_bid_active[i].save()
-                        
+
                         # if the treshold is passed
                         notification_treshold = users_with_auto_bid_active[i].bidding_max_amount * \
                             users_with_auto_bid_active[i].bidding_notification_threshold / 100
@@ -123,7 +126,7 @@ class AddBidView(APIView, UserbidWritePermission):
                     winner_auto_bid.amout_left = 0
                     winner_bid.save()
                     winner_auto_bid.save()
-                    
+
                     # if the treshold is passed
                     notification_treshold = winner_auto_bid.bidding_max_amount * \
                         winner_auto_bid.bidding_notification_threshold / 100
@@ -132,7 +135,7 @@ class AddBidView(APIView, UserbidWritePermission):
                     if (used_credit >= notification_treshold):
                         Util.send_email(
                             winner_auto_bid.user.email, used_credit)
-                        
+
                 else:
                     winner_auto_bid.amout_left -= max(
                         winner_bid_amount, bid.bidding_amount + 1) - winner_bid.bidding_amount
@@ -143,7 +146,7 @@ class AddBidView(APIView, UserbidWritePermission):
                     winner_bid.save()
                     winner_auto_bid.save()
                     product.save()
-                    
+
                     # if the treshold is passed
                     notification_treshold = winner_auto_bid.bidding_max_amount * \
                         winner_auto_bid.bidding_notification_threshold / 100
