@@ -46,8 +46,8 @@ npm start
 
 ## Details and technologies
 
-**FrontEnd** : Nextjs(reactjs), Bootstrap, Styled components. <br />
-**Backend** : Django rest framework, Cloudinary storage (for image storing) <br/>
+**FrontEnd** : Nextjs(reactjs), Websockets, Bootstrap, Styled components. <br />
+**Backend** : Django rest framework, Cloudinary storage, Django channels (for image storing) <br/>
 **Database** : SQLlite (only in dev mode in production it well be better to use PostgreSQL but the configuration doesn't change)<br>
 
 **API Documentation** : http://127.0.0.1:8000/docs/
@@ -55,6 +55,7 @@ npm start
 **features** :
 
 - Athentication : JWT + HTTP only cookies (for secure connection)
+- Real time updates : product price is updating in real time (Django channels + websockets)
 - Account creation : Email verification via link and possibility to reset the password via email link
 - Product list : list of all products with the possibility of title and description search and order by price
 - Product details : The details of the product (Your bid if exists, the winning bid, time left, product features)
@@ -80,6 +81,5 @@ username : admin1 , password : admin1 <br/>
 username : admin2 , password : admin2
 
 **Futur possible updates**
-+ Real time bidding updates (django channels + web sockets)
 + Online checkout (stripe)
 + wish list and cart pages 
